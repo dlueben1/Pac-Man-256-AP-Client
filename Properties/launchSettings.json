@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ApPac256": {
+      "commandName": "Project"
+    },
+    "PAC-MAN 256": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files (x86)\\Steam\\steamapps\\common\\PAC-MAN 256\\PAC-MAN256.exe"
+    }
+  }
+}
