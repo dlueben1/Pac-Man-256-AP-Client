@@ -14,5 +14,11 @@ namespace ApPac256
         public static string PlayerName { get; set;}
 
         #endregion
+
+        #region Power-Ups
+
+        public static Dictionary<string, int> PowerUps { get; set;}
+
+        #endregion
     }
 }

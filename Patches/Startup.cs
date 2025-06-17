@@ -22,7 +22,6 @@ namespace ApPac256
             static bool Prefix(UILogoController __instance)
             {
                 Plugin.Logger.LogMessage("Overriding normal game boot sequence...");
-                System.IO.File.WriteAllText("alive.txt", "PLUGIN LIVES");
 
                 // Set the initial logo position
                 logoY = 8f;
@@ -60,8 +59,8 @@ namespace ApPac256
         static IEnumerator APStart(UILogoController startup, Camera mainCam, Camera uiCam)
         {
             // Hijack the camera, for now
-            //uiCam.clearFlags = CameraClearFlags.SolidColor;
-            //uiCam.backgroundColor = Color.blue;
+            uiCam.clearFlags = CameraClearFlags.SolidColor;
+            uiCam.backgroundColor = Color.blue;
 
             // Not sure the purpose of this, but it was used in the original and fixes problems
             float t2 = 0.2f;
@@ -83,7 +82,7 @@ namespace ApPac256
             startup.InvokeInternal("ChangeLogoSize");
 
             // Inject the Archipelago Startup Menu
-            var menuObj = new GameObject("Archipelago UI - Start");
+            var menuObj = new GameObject("Archipelago");
             var component = menuObj.AddComponent<ArchipelagoUIStart>();
             component.MainCamera = mainCam;
             component.UICamera = uiCam;

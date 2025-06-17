@@ -105,8 +105,11 @@ namespace ApPac256
             UICamera.backgroundColor = new Color(0.080f, 0.080f, 0.080f, 1.000f);
             MainCamera.enabled = true;
 
+            // Add in the Main UI
+            this.gameObject.AddComponent<ArchipelagoUIMainMenu>();
+
             // Then destroy ourselves
-            Destroy(this.gameObject);
+            Destroy(this);
         }
     }
 }
