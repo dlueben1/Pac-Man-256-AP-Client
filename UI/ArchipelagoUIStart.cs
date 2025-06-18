@@ -26,12 +26,18 @@ namespace ApPac256
 
         private APStartState state;
 
-        private float labelOffset = 180f;
-        private float gapBetween = 36f;
+        private const float labelOffset = 180f;
+        private const float gapBetween = 36f;
 
         private string serverField = "";
         private string pwdField = "";
         private string playerField = "";
+
+        void Start()
+        {
+            // Prevents the object from being deleted when the user presses space/A to start the game
+            DontDestroyOnLoad(this.gameObject);
+        }
 
         void OnGUI()
         {

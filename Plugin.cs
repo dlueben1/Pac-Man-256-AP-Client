@@ -2,6 +2,7 @@
 using BepInEx.Logging;
 using HarmonyLib;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +21,19 @@ public class Plugin : BaseUnityPlugin
         // Plugin startup logic
         Logger = base.Logger;
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
+
+        // Initialize Archipelago Data
+        ArchipelagoManager.PowerUps = new Dictionary<string, int>();
+        ArchipelagoManager.Purchasables = new LocationShop[50];
+        for(int i = 0; i < 50; i++)
+        {
+            ArchipelagoManager.Purchasables[i] = new LocationShop
+            {
+                ItemName = $"Item #{UnityEngine.Random.Range(0, 10000)}",
+                Owner = "Claire",
+                Cost = UnityEngine.Random.Range(16, 64)
+            };
+        }
 
         // Apply Method Patches
         harmony.PatchAll();

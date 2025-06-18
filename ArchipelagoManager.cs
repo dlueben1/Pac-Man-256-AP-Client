@@ -20,5 +20,11 @@ namespace ApPac256
         public static Dictionary<string, int> PowerUps { get; set;}
 
         #endregion
+
+        #region Shop
+
+        public static LocationShop[] Purchasables;
+
+        #endregion
     }
 }
