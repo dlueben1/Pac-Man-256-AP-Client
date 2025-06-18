@@ -89,6 +89,12 @@ namespace ApPac256
             // Disable the UI
             state = APStartState.Destroying;
 
+            // Disable Free Gifts, if the player desired
+            if(ArchipelagoManager.DisableFreeGifts)
+            {
+                GM.inst.nextCoinAdWatchConsole = float.MaxValue;
+            }
+
             // This is a functional copy of how the game starts itself
             UILogoController.inst.InvokeInternal("ChangeLogoSize");
             UILogoController.inst.ShowLogoLaunch(state: true);

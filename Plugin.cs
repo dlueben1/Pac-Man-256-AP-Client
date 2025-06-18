@@ -38,6 +38,15 @@ public class Plugin : BaseUnityPlugin
         // Apply Method Patches
         harmony.PatchAll();
     }
+
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.H))
+        {
+            MessageUtil.DisplayMessage($"CHECK {System.DateTime.Now}");
+        }
+    }
+
     private void OnDestroy()
     {
         harmony.UnpatchSelf();

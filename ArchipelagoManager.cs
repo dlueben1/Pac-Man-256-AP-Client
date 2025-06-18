@@ -23,7 +23,13 @@ namespace ApPac256
 
         #region Shop
 
-        public static LocationShop[] Purchasables;
+        public static LocationShop[] Purchasables { get; set; }
+
+        #endregion
+
+        #region Options
+
+        public static bool DisableFreeGifts { get; set; }
 
         #endregion
     }
