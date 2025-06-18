@@ -64,9 +64,9 @@ namespace ApPac256
             } while (MessageQueue.Count > 0);
 
             // Close the panel
+            isOpen = false;
             Go.to(MissionDetail_Reminder.inst._transform, 1f, new GoTweenConfig().anchoredPosition(new Vector2(0f, 200f)).setEaseType(GoEaseType.QuadOut).onComplete(TurnOffMessage));
             MissionDetail_Reminder.inst.canvasGroup.alphaTo(1f, 0f);
-            isOpen = false;
         }
 
         private static void TurnOffMessage(AbstractGoTween tween)
