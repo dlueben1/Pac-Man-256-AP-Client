@@ -13,6 +13,7 @@ namespace ApPac256;
 public class Plugin : BaseUnityPlugin
 {
     internal static new ManualLogSource Logger;
+    private int test = 0;
 
     private readonly Harmony harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
         
@@ -43,7 +44,8 @@ public class Plugin : BaseUnityPlugin
     {
         if(Input.GetKeyDown(KeyCode.H))
         {
-            MessageUtil.DisplayMessage($"CHECK {System.DateTime.Now}");
+            test++;
+            MessageUtil.DisplayMessage($"CHECK #${test} {System.DateTime.Now}");
         }
     }
 

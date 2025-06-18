@@ -12,25 +12,61 @@ namespace ApPac256
 {
     public static class MessageUtil
     {
+        private static object _concurrent = new object();
+        private static bool isOpen = false;
+        private const float messageLingerTime = 3f;
+        private static Queue<string> MessageQueue { get; set; } = new Queue<string>();
+
         /// <summary>
-        /// Displays a Message in-game.
-        /// Uses the orange topmost notification.
+        /// Queues a message to be displayed in game
         /// </summary>
         /// <param name="msg">The Message to show to the user</param>
         public static void DisplayMessage(string msg)
         {
-            MissionDetail_Reminder.inst.StartCoroutine(LingerMessage(msg));
+            // Queue the message
+            lock(_concurrent)
+            {
+                Plugin.Logger.LogMessage(msg);
+                MessageQueue.Enqueue(msg);
+            }
+
+            // If the Mission UI isn't already visible, make it visible
+            if (!isOpen)
+            {
+                Plugin.Logger.LogInfo("Opening Message UI...");
+                isOpen = true;
+                MissionDetail_Reminder.inst.StartCoroutine(ShowMessageQueue());
+            }
         }
 
-        private static IEnumerator LingerMessage(string msg)
+        /// <summary>
+        /// Display all messages in the queue
+        /// </summary>
+        /// <returns></returns>
+        private static IEnumerator ShowMessageQueue()
         {
+            // Show the panel
+            isOpen = true;
             MissionDetail_Reminder.inst.root.SetActive(value: true);
-            MissionDetail_Reminder.inst.descriptionLabel.text = msg;
+
+            // Set initial message
+            MissionDetail_Reminder.inst.descriptionLabel.text = MessageQueue.Peek();
+
+            // Animate in
             Go.to(MissionDetail_Reminder.inst._transform, 1f, new GoTweenConfig().anchoredPosition(Vector2.zero).setEaseType(GoEaseType.QuadOut));
             MissionDetail_Reminder.inst.canvasGroup.alphaTo(1f, 1f);
-            yield return new WaitForSeconds(3f);
+
+            // Display each message
+            do
+            {
+                MissionDetail_Reminder.inst.descriptionLabel.text = MessageQueue.Dequeue();
+                yield return new WaitForSeconds(messageLingerTime);
+            } while (MessageQueue.Count > 0);
+
+            // Close the panel
             Go.to(MissionDetail_Reminder.inst._transform, 1f, new GoTweenConfig().anchoredPosition(new Vector2(0f, 200f)).setEaseType(GoEaseType.QuadOut).onComplete(TurnOffMessage));
             MissionDetail_Reminder.inst.canvasGroup.alphaTo(1f, 0f);
+            isOpen = false;
         }
 
         private static void TurnOffMessage(AbstractGoTween tween)
