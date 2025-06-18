@@ -89,5 +89,18 @@ namespace ApPac256
 
             yield return null;
         }
+
+        /// <summary>
+        /// As far as I can tell, the only important place this function is called is deciding whether to show the "first time" UI 
+        /// (where it says "Play" instead of "1 Player" / "Multi Player"), so we want this to always be a high value
+        /// </summary>
+        [HarmonyPatch(typeof(SaveData), "GetNumberOfUnlockedPowerUps")]
+        class PatchForceFullMenu
+        {
+            static void Postfix(ref int __result)
+            {
+                __result = 21;
+            }
+        }
     }
 }

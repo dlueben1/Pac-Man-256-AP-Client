@@ -37,15 +37,5 @@ namespace ApPac256
         {
             MissionDetail_Reminder.inst.root.SetActive(value: false);
         }
-
-        [HarmonyPatch(typeof(Player), "KillCharacter")]
-        class PatchMMessageAwake
-        {
-            static void Prefix(Player __instance)
-            {
-                //test
-                DisplayMessage("Received 'Progressive Beam' from isgvfj");
-            }
-        }
     }
 }

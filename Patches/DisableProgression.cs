@@ -13,7 +13,7 @@ namespace ApPac256
         /// Disables unlocking Steam Achievements when the conditions are met
         /// </summary>
         [HarmonyPatch]
-        public class DisableUnlockingSteamAchievement1
+        public class PatchDisableUnlockingSteamAchievement1
         {
             static MethodBase TargetMethod()
             {
@@ -32,7 +32,7 @@ namespace ApPac256
         /// Disables unlocking Steam Achievements when a file is loaded
         /// </summary>
         [HarmonyPatch]
-        public class DisableUnlockingSteamAchievement2
+        public class PatchDisableUnlockingSteamAchievement2
         {
             static MethodBase TargetMethod()
             {
@@ -47,8 +47,18 @@ namespace ApPac256
             }
         }
 
+        [HarmonyPatch(typeof(Panel_PowerUpProgression), "Process")]
+        public class PatchDisablePowerupProgressionUI
+        {
+            static bool Prefix()
+            {
+                Panel_GameOver.inst.Toggle(state: true);
+                return false;
+            }
+        }
+
         [HarmonyPatch]
-        public class DisableSteamLeaderboard1
+        public class PatchDisableSteamLeaderboard1
         {
             static MethodBase TargetMethod()
             {
@@ -65,7 +75,7 @@ namespace ApPac256
 
 
         [HarmonyPatch]
-        public class DisableSteamLeaderboard2
+        public class PatchDisableSteamLeaderboard2
         {
             static MethodBase TargetMethod()
             {
@@ -81,7 +91,7 @@ namespace ApPac256
         }
 
         [HarmonyPatch]
-        public class DisableSteamLeaderboard3
+        public class PatchDisableSteamLeaderboard3
         {
             static MethodBase TargetMethod()
             {
@@ -97,7 +107,7 @@ namespace ApPac256
         }
 
         [HarmonyPatch]
-        public class DisableSteamLeaderboard4
+        public class PatchDisableSteamLeaderboard4
         {
             static MethodBase TargetMethod()
             {
@@ -113,7 +123,7 @@ namespace ApPac256
         }
 
         [HarmonyPatch]
-        public class DisableSteamLeaderboard5
+        public class PatchDisableSteamLeaderboard5
         {
             static MethodBase TargetMethod()
             {
@@ -129,7 +139,7 @@ namespace ApPac256
         }
 
         [HarmonyPatch]
-        public class DisableSteamLeaderboard6
+        public class PatchDisableSteamLeaderboard6
         {
             static MethodBase TargetMethod()
             {
