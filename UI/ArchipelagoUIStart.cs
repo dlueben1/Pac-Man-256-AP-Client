@@ -18,9 +18,13 @@ namespace ApPac256
         /// </summary>
         public Camera UICamera;
 
+        // Prevent a bug where you can start the game hundreds of times upon connection
+        private readonly object _lock = new object();
+
         private enum APStartState: byte
         {
             Login = 0,
+            TryConnect = 1,
             Destroying
         }
 
@@ -41,11 +45,19 @@ namespace ApPac256
 
         void OnGUI()
         {
-            if(state != APStartState.Login)
+            if(state == APStartState.Login)
             {
-                return;
+                DrawLoginUI();
             }
+            else if(state == APStartState.TryConnect)
+            {
+                DrawConnectingUI();
+            }
+            
+        }
 
+        void DrawLoginUI()
+        {
             // Calculate the center of the screen
             var windowCenter = new Vector2(Screen.width / 2, Screen.height / 2);
 
@@ -68,7 +80,7 @@ namespace ApPac256
             playerField = GUI.TextField(new Rect(pivot.x - 50, pivot.y + (gapBetween * 2), 180, 32), playerField);
 
             // Handle Connection Attempt
-            if(GUI.Button(new Rect(pivot.x - 80, pivot.y + (gapBetween * 3) + 12, 120, 32), "Connect"))
+            if (!ArchipelagoManager.Connecting && GUI.Button(new Rect(pivot.x - 80, pivot.y + (gapBetween * 3) + 12, 120, 32), "Connect"))
             {
                 // Cache AP connection details
                 ArchipelagoManager.ServerAddress = serverField;
@@ -79,29 +91,71 @@ namespace ApPac256
                 Plugin.Logger.LogInfo($"    - Server Password: {ArchipelagoManager.ServerPassword}");
                 Plugin.Logger.LogInfo($"    - Player Name: {ArchipelagoManager.PlayerName}");
 
-                // And start the game
+                // And try to connect
+                state = APStartState.TryConnect;
+
+                // Attempt to Connect
+                ArchipelagoManager.Connect();
+            }
+        }
+
+        void DrawConnectingUI()
+        {
+            // Calculate the center of the screen
+            var windowCenter = new Vector2(Screen.width / 2, Screen.height / 2);
+
+            // Calculate the Anchor for the Menu
+            var pivot = new Vector2(windowCenter.x - 100, windowCenter.y + 100);
+
+            // Draw the Window
+            GUI.Box(new Rect(pivot.x, pivot.y, 150, 32), "Connecting...");
+
+            // Listen for connection event
+            ArchipelagoManager.Connected += OnConnectionStatus;
+        }
+
+        private void OnConnectionStatus(object sender, ResultEventArgs e)
+        {
+            // Stop listening for events
+            ArchipelagoManager.Connected -= OnConnectionStatus;
+
+            // If we connected, start the game
+            if (e.Value)
+            {
                 StartGame();
+            }
+            // If we disconnected, go back to login
+            else
+            {
+                state = APStartState.Login;
             }
         }
 
         void StartGame()
         {
-            // Disable the UI
-            state = APStartState.Destroying;
-
-            // Disable Free Gifts, if the player desired
-            if(ArchipelagoManager.DisableFreeGifts)
+            lock(_lock)
             {
-                GM.inst.nextCoinAdWatchConsole = float.MaxValue;
+                if (state == APStartState.Destroying) return;
+
+                Plugin.Logger.LogMessage("START GAME...");
+
+                // Disable the UI
+                state = APStartState.Destroying;
+
+                // Disable Free Gifts, if the player desired
+                if(ArchipelagoManager.DisableFreeGifts)
+                {
+                    GM.inst.nextCoinAdWatchConsole = float.MaxValue;
+                }
+
+                // This is a functional copy of how the game starts itself
+                UILogoController.inst.InvokeInternal("ChangeLogoSize");
+                UILogoController.inst.ShowLogoLaunch(state: true);
+                UILogoController.inst.isOpen = true;
+
+                // Wrap up this GameObject
+                StartCoroutine(OnExit());
             }
-
-            // This is a functional copy of how the game starts itself
-            UILogoController.inst.InvokeInternal("ChangeLogoSize");
-            UILogoController.inst.ShowLogoLaunch(state: true);
-            UILogoController.inst.isOpen = true;
-
-            // Wrap up this GameObject
-            StartCoroutine(OnExit());
         }
 
         /// <summary>
@@ -119,6 +173,9 @@ namespace ApPac256
 
             // Add in the Main UI
             this.gameObject.AddComponent<ArchipelagoUIMainMenu>();
+
+            // Stop listening to events
+            ArchipelagoManager.Connected -= OnConnectionStatus;
 
             // Then destroy ourselves
             Destroy(this);

@@ -18,11 +18,20 @@ namespace ApPac256
 
         #endregion
 
+        void Awake()
+        {
+            Plugin.Logger.LogMessage("INST ...");
+        }
+
         void OnGUI()
         {
-            DrawGeneralInfo();
-            DrawItemInfo();
-            DrawShop();
+            try
+            {
+                DrawGeneralInfo();
+                DrawItemInfo();
+                DrawShop();
+            }
+            catch { }
         }
 
         void DrawGeneralInfo()
@@ -64,11 +73,36 @@ namespace ApPac256
                     {
                         var item = ArchipelagoManager.Purchasables[i];
                         GUI.Label(new Rect(0, itemOffset * i, 299, 32), $"{item.ItemName} - {item.Owner} - {item.Cost}¢");
-                        GUI.Button(new Rect(300, itemOffset * i, 100, 24), "Buy");
+                        if(item.Purchased)
+                        {
+                            GUI.Label(new Rect(300, itemOffset * i, 100, 24), "SOLD OUT");
+                        }
+                        else
+                        {
+                            if(GUI.Button(new Rect(300, itemOffset * i, 100, 24), "Buy"))
+                            {
+                                if(item.Cost <= GM.inst.currentSaveData.gold)
+                                {
+                                    BuyItem(item);
+                                }
+                            }
+                        }
                     }
                     GUI.EndScrollView();
                 }, "Shop");
             }
+        }
+
+        void BuyItem(LocationShop item)
+        {
+            // Tell Archipelago
+            ArchipelagoManager.Session.Locations.CompleteLocationChecks(item.ID);
+
+            // Spend gold
+            GM.inst.currentSaveData.gold -= item.Cost;
+
+            // Mark item as bought
+            item.Purchased = true;
         }
     }
 }

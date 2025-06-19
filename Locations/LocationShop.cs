@@ -7,9 +7,10 @@ namespace ApPac256
 {
     public class LocationShop
     {
+        public long ID;
         public string ItemName;
         public string Owner;
-        public int Cost;
+        public uint Cost;
         public bool Purchased;
     }
 }
