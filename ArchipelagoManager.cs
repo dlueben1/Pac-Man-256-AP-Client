@@ -47,7 +47,7 @@ namespace ApPac256
         /// </summary>
         private static int Index;
 
-        private static Dictionary<string, object> SlotData;
+        public static Dictionary<string, object> SlotData { get; set; }
 
         #endregion
 
@@ -212,6 +212,13 @@ namespace ApPac256
         /// </summary>
         public static void OnConnected()
         {
+            // Log all slot data
+            foreach(var kvp in SlotData)
+            {
+                Plugin.Logger.LogMessage($"KEY: {kvp.Key}");
+                Plugin.Logger.LogMessage($"VAL: {kvp.Value.ToString()}");
+            }
+
             // Initialize Shop
             Session.Locations.ScoutLocationsAsync(map => 
             {
@@ -286,7 +293,7 @@ namespace ApPac256
             else
             {
                 // Update Powerup Map
-                PowerupType powerup = (PowerupType)PowerUpData.PowerUpNameMap[receivedItem.ItemName];
+                PowerupType powerup = (PowerupType)receivedItem.ItemId;
                 if(PowerUps.ContainsKey(powerup))
                 {
                     PowerUps[powerup] += 1;
