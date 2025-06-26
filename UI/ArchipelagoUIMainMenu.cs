@@ -1,13 +1,26 @@
-﻿using System;
+﻿using ApPac256.Data;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ApPac256
 {
     public class ArchipelagoUIMainMenu : MonoBehaviour
     {
+        /// <summary>
+        /// This is how the developers have made it easy to grab references to the instance for different UI items, so I'm following the pattern here
+        /// </summary>
+        public static ArchipelagoUIMainMenu inst;
+
+        /// <summary>
+        /// The Main Menu UIKey, generated when the main menu becomes visible initially
+        /// </summary>
+        private GameObject apMenuObj;
+
         private const float gapBetween = 12f;
 
         #region Shop GUI
@@ -20,13 +33,86 @@ namespace ApPac256
 
         void Awake()
         {
-            Plugin.Logger.LogMessage("INST ...");
+            inst = this;
+        }
+
+        /// <summary>
+        /// Creates a UIKey Button for triggering the In-Game Archipelago Menu
+        /// </summary>
+        public void TryCreateArchipelagoMenuButton()
+        {
+            // If the button already exists, ignore this
+            if (apMenuObj != null) return;
+
+            // Find the Button we're going to copy, since I can't find the reference to it
+            var themeKey = Panel_PreGame.inst.expandKey.selectOnLeft.selectOnLeft;
+
+            var playKey = Panel_PreGame.inst.expandKey.selectOnLeft;
+            var y = playKey.gameObject.GetComponentsInChildren<Text>();
+            foreach (Text p in y)
+            {
+                foreach(var f in p.font.fontNames)
+                {
+                    Plugin.Logger.LogMessage($"FONT NAME: {f}");
+                }
+            }
+
+            // Create Archipelago Menu
+            apMenuObj = GameObject.Instantiate(themeKey.gameObject, themeKey.transform);
+            var apMenuRect = apMenuObj.GetComponent<RectTransform>();
+            var apMenuKey = apMenuObj.GetComponent<UIKey>();
+            apMenuRect.anchoredPosition = new Vector2(70, 0);
+
+            // Connect the AP Menu Button to the UI for Keyboard/Gamepad navigation
+            var singlePlayerKey = Panel_PreGame.inst.expandKey.selectOnLeft;
+            apMenuKey.selectOnLeft = themeKey;
+            apMenuKey.selectOnRight = singlePlayerKey;
+
+            // Connect the rest of the UI to the AP Menu Button
+            singlePlayerKey.selectOnLeft = apMenuKey;
+            themeKey.selectOnRight = apMenuKey;
+            singlePlayerKey.selectOnDown.selectOnLeft = apMenuKey;
+            singlePlayerKey.selectOnUp.selectOnLeft = apMenuKey;
+
+            // Load Archipelago Image from Code (trying to keep everything inside the plugin for now, open to suggestions)
+            var tex = new Texture2D(0, 0, TextureFormat.RGBA32, false);
+            tex.LoadImage(IconArchipelago.Pixels, true);
+            tex.filterMode = FilterMode.Point;
+            var icon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
+
+            // Change icon for Archipelago Menu and scale it to the correct size
+            var img = apMenuObj.transform.FindChild("Icon").GetComponent<Image>();
+            var iconRect = img.GetComponent<RectTransform>();
+            img.sprite = icon;
+            var newScale = iconRect.localScale * 0.5f;
+            iconRect.INTERNAL_set_localScale(ref newScale);
+
+            // Change the target for the submit event
+            foreach(var m in apMenuKey.modules)
+            {
+                Plugin.Logger.LogMessage($"MODULE: {m.name} / TYPE: {m.GetType().ToString()}");
+            }
+            apMenuKey.onSubmit.RemoveAllListeners();
+            apMenuKey.onSubmitWhileDisabled.RemoveAllListeners();
+            apMenuKey.onSubmit = new UnityEngine.Events.UnityEvent();
+            apMenuKey.onSubmit.AddListener(() =>
+            {
+                Plugin.Logger.LogMessage("PRESSED AP MENU!");
+            });
+        }
+
+        void Update()
+        {
+            
         }
 
         void OnGUI()
         {
             try
             {
+                // Always on UI
+
+                // Togglable UI
                 DrawGeneralInfo();
                 DrawItemInfo();
                 DrawShop();

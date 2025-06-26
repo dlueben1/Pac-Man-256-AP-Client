@@ -45,6 +45,7 @@ namespace ApPac256
 
         void OnGUI()
         {
+            GUI.skin = CustomIMGUI.Skin;
             if(state == APStartState.Login)
             {
                 DrawLoginUI();
