@@ -16,7 +16,11 @@ namespace ApPac256
         {
             static void Postfix()
             {
-                ArchipelagoUIMainMenu.inst.TryCreateArchipelagoMenuButton();
+                // Disable the "First Time" Powerup Pop-Up (from both Power Up Grid and soon-to-be AP Menu)
+                GM.inst.currentSaveData.hasPUgrid = true;
+
+                // Create the Archipelago Menu Option
+                ArchipelagoManager.TryCreateArchipelagoMenuButton();
             }
         }
     }

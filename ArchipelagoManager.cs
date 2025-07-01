@@ -1,4 +1,5 @@
-﻿using Archipelago.MultiClient.Net;
+﻿using ApPac256.Data;
+using Archipelago.MultiClient.Net;
 using Archipelago.MultiClient.Net.BounceFeatures.DeathLink;
 using Archipelago.MultiClient.Net.Enums;
 using Archipelago.MultiClient.Net.Helpers;
@@ -7,6 +8,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace ApPac256
 {
@@ -50,7 +53,13 @@ namespace ApPac256
 
         #endregion
 
-        #region
+        #region UI
+
+        private static bool IsMainMenuInjected { get; set; }
+
+        #endregion
+
+        #region ???
 
         /// <summary>
         /// Fires when we're successfully connected to Archipelago
@@ -74,7 +83,7 @@ namespace ApPac256
 
         #endregion
 
-        #region
+        #region ???
 
         public static List<long> CheckedLocations { get; set; }
 
@@ -119,8 +128,6 @@ namespace ApPac256
             // Listen for received items
             Session.Items.ItemReceived += OnItemReceived;
 
-            Session.Socket.PacketReceived += Socket_PacketReceived;
-
             // Listen for generic messages
             Session.MessageLog.OnMessageReceived += message => Plugin.Logger.LogMessage(message.ToString());
 
@@ -151,18 +158,6 @@ namespace ApPac256
                 Plugin.Logger.LogError(e);
                 HandleConnectResult(new LoginFailure(e.ToString()));
             }
-        }
-
-        private static void Socket_PacketReceived(ArchipelagoPacketBase packet)
-        {
-            //var packetJson = packet.ToJObject();
-            //if(packetJson["cmd"]. == "PrintJSON" && packetJson["type"] == "ItemSend" )
-            //{
-
-            //}
-            //Plugin.Logger.LogMessage($"PACKET RECEIVED: {packet.PacketType}");
-            //Plugin.Logger.LogMessage($"TS: {packet.ToString()}");
-            //Plugin.Logger.LogMessage($"TJ: {packet.ToJObject()}");
         }
 
         /// <summary>
@@ -314,6 +309,72 @@ namespace ApPac256
                 }
             }
             Plugin.Logger.LogInfo($" - POWERUPS COUNT: {PowerUps.Count}");
+        }
+
+        #endregion
+
+        #region Archipelago Menu UI
+
+        /// <summary>
+        /// Creates a UIKey Button for triggering the In-Game Archipelago Menu
+        /// </summary>
+        public static void TryCreateArchipelagoMenuButton()
+        {
+            // Ignore if we've injected the main menu
+            if(IsMainMenuInjected) return;
+
+            // Find the Button we're going to copy, since I can't find the reference to it
+            var themeKey = Panel_PreGame.inst.expandKey.selectOnLeft.selectOnLeft;
+
+            // Create Archipelago Menu
+            var apMenuObj = GameObject.Instantiate(themeKey.gameObject, themeKey.transform);
+            var apMenuRect = apMenuObj.GetComponent<RectTransform>();
+            var apMenuKey = apMenuObj.GetComponent<UIKey>();
+            apMenuRect.anchoredPosition = new Vector2(70, 0);
+
+            // Connect the AP Menu Button to the UI for Keyboard/Gamepad navigation
+            var singlePlayerKey = Panel_PreGame.inst.expandKey.selectOnLeft;
+            apMenuKey.selectOnLeft = themeKey;
+            apMenuKey.selectOnRight = singlePlayerKey;
+
+            // Connect the rest of the UI to the AP Menu Button
+            singlePlayerKey.selectOnLeft = apMenuKey;
+            themeKey.selectOnRight = apMenuKey;
+            singlePlayerKey.selectOnDown.selectOnLeft = apMenuKey;
+            singlePlayerKey.selectOnUp.selectOnLeft = apMenuKey;
+
+            // Load Archipelago Image from Code (trying to keep everything inside the plugin for now, open to suggestions)
+            var tex = new Texture2D(0, 0, TextureFormat.RGBA32, false);
+            tex.LoadImage(IconArchipelago.Pixels, true);
+            tex.filterMode = FilterMode.Point;
+            var icon = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), Vector2.zero);
+
+            // Change icon for Archipelago Menu and scale it to the correct size
+            var img = apMenuObj.transform.FindChild("Icon").GetComponent<Image>();
+            var iconRect = img.GetComponent<RectTransform>();
+            img.sprite = icon;
+            var newScale = iconRect.localScale * 0.5f;
+            iconRect.INTERNAL_set_localScale(ref newScale);
+
+            // Create the Archipelago View (Shop + Settings)
+            var apMenuView = GameObject.Instantiate(PowerUpGridManager.inst.gameObject, PowerUpGridManager.inst.transform.parent);
+            apMenuView.AddComponent<ArchipelagoUIMainMenu>();
+
+            // Change the target for the menu trigger's submit event
+            foreach (var m in apMenuKey.modules)
+            {
+                Plugin.Logger.LogMessage($"MODULE: {m.name} / TYPE: {m.GetType().ToString()}");
+            }
+            apMenuKey.onSubmit.RemoveAllListeners();
+            apMenuKey.onSubmitWhileDisabled.RemoveAllListeners();
+            apMenuKey.onSubmit = new UnityEngine.Events.UnityEvent();
+            apMenuKey.onSubmit.AddListener(() =>
+            {
+                apMenuView.GetComponent<PowerUpGridManager>().ToggleOn();
+            });
+
+            // Mark that we've injected the Main Menu
+            IsMainMenuInjected = true;
         }
 
         #endregion

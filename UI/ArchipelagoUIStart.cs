@@ -45,7 +45,6 @@ namespace ApPac256
 
         void OnGUI()
         {
-            GUI.skin = CustomIMGUI.Skin;
             if(state == APStartState.Login)
             {
                 DrawLoginUI();
@@ -172,8 +171,8 @@ namespace ApPac256
             UICamera.backgroundColor = new Color(0.080f, 0.080f, 0.080f, 1.000f);
             MainCamera.enabled = true;
 
-            // Add in the Main UI
-            this.gameObject.AddComponent<ArchipelagoUIMainMenu>();
+            //// Add in the Main UI
+            //this.gameObject.AddComponent<ArchipelagoUIMainMenu>();
 
             // Stop listening to events
             ArchipelagoManager.Connected -= OnConnectionStatus;
